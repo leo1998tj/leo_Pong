@@ -198,6 +198,7 @@ def main_new():
         if episode % 10 == 0:
             print('episode: ', episode, 'now reward:', episode_reward, 'Evaluation Average Reward:', np.mean(running_reward))
 
+
         if np.mean(running_reward) > -15:
             print("Solved! Running reward is now {} and "
                   "the last episode runs to {} time steps!".format(running_reward, episode))
