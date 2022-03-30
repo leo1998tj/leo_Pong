@@ -194,6 +194,7 @@ def main_new():
         running_reward.append(episode_reward)
         finish_episode() # 使用新的方法更新参数
         # agent.learn()  # 更新策略网络
+
         if episode % 10 == 0:
             print('episode: ', episode, 'now reward:', episode_reward, 'Evaluation Average Reward:', np.mean(running_reward))
 
