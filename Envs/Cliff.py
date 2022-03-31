@@ -11,7 +11,7 @@ from torch import optim
 from collections import deque
 
 from Models.Policy_model_for_test import Policy_cliff
-
+import os
 # Hyper Parameters for PG Network
 GAMMA = 0.95  # discount factor
 LR = 0.01  # learning rate
@@ -99,8 +99,8 @@ class PG(object):
 
 # ---------------------------------------------------------
 # Hyper Parameters
-EPISODE = 3000  # Episode limitation
-STEP = 300  # Step limitation in an episode
+EPISODE = 500000  # Episode limitation
+STEP = 700  # Step limitation in an episode
 TEST = 10  # The number of experiment test every 100 episode
 gamma = 0.99
 
@@ -174,9 +174,20 @@ def finish_episode():
     del agent.network.saved_log_probs[:]
 
 def main_new():
+    if os.path.exists("daliy.pt"):
+        agent.network.load_state_dict(torch.load(r"D:\Rl\leo_pong\Envs\daliy.pt")) #TODO: 要改成daily的文件
+        agent.network = agent.network.to(device)
+        print("loaded model success!")
     # 初始reward
+
+    poltting_data = []
+    done_num = 0
     running_reward = deque()
     for episode in range(EPISODE):
+        if episode > 200000:
+            STEP = 500
+        elif episode < 50000:
+            STEP = 1000
         # initialize task
         state, episode_reward = env.reset(), 0  # episode_reward 用于判断何时停止训练
         for step in range(STEP):
@@ -188,6 +199,8 @@ def main_new():
             # state = next_state
             if done:
                 # print("stick for ",step, " steps")
+                done_num = done_num + 1
+                print("{} has {} !".format(episode, done_num))
                 break
         if len(running_reward) >= 10:
             running_reward.popleft()
@@ -196,14 +209,18 @@ def main_new():
         # agent.learn()  # 更新策略网络
 
         if episode % 10 == 0:
-            print('episode: ', episode, 'now reward:', episode_reward, 'Evaluation Average Reward:', np.mean(running_reward))
+            poltting_data.append(episode_reward)  # 用于画图
+            print('episode: ', episode, 'now reward:', episode_reward, 'Evaluation Average Reward:', np.mean(running_reward), 'total_done', done_num)
 
+        if episode % 1000 == 0:
+            torch.save(agent.network.state_dict(), 'daliy.pt')
 
-        if np.mean(running_reward) > -15:
+        if np.mean(running_reward) > -100 and episode > 300:
             print("Solved! Running reward is now {} and "
                   "the last episode runs to {} time steps!".format(running_reward, episode))
-            torch.save(agent.network.state_dict(), 'hello.pt')
+            torch.save(agent.network.state_dict(), 'final.pt')
             break
+    np.save('poltting_data.npy', poltting_data)
 
 if __name__ == '__main__':
     time_start = time.time()

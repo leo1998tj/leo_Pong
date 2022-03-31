@@ -61,6 +61,12 @@ class Policy_cliff(nn.Module):
         self.saved_log_probs.append(m.log_prob(action))
         return action.item()
 
+    def get_pro(self, state):
+        state = Variable(torch.tensor(state).float().unsqueeze(0))
+        if is_cuda: state = state.cuda()
+        probs = self.forward(state)
+        return probs
+
     # def select_action(state):
     #     state = torch.from_numpy(state).float().unsqueeze(0)
     #     probs = policy(state)
